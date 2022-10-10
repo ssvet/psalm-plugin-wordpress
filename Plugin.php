@@ -75,23 +75,44 @@ class Plugin implements PluginEntryPointInterface, AfterEveryFunctionCallAnalysi
 
 		// prefer path relative to current working directory (original default)
 		$cwdPath = $cwd . '/' . $path;
+		echo "$cwdPath\n";
+
+
 		if (is_dir($cwdPath)) {
+			echo "Loading $cwdPath\n";
 			return $cwdPath;
 		}
 
-		// check running as composer package inside a vendor folder
 		$pkgSelfDir = __DIR__;
-		$vendorDir = dirname($pkgSelfDir, 2);
-		if ($pkgSelfDir === $vendorDir . '/' . $self) {
+		// vendor folder 2 folders upper.
+		$vendorDir = dirname($pkgSelfDir, 4) . '/vendor';
+		echo "$vendorDir/$self - $pkgSelfDir\n";
+
+		if ( is_dir( $vendorDir . '/' . $self ) ) {
 			// likely plugin is running as composer package, let's try for the path
 			$pkgPath = substr($path, strlen($vendor));
 			$vendorPath = $vendorDir . '/' . $pkgPath;
 			if (is_dir($vendorPath)) {
+				echo "Loading $vendorPath\n";
+				return $vendorPath;
+			}
+		}
+		// check running as composer package inside a vendor folder
+		$pkgSelfDir = __DIR__;
+		$vendorDir = dirname($pkgSelfDir, 2);
+		if (is_dir( $vendorDir . '/' . $self )) {
+			// likely plugin is running as composer package, let's try for the path
+			$pkgPath = substr($path, strlen($vendor));
+			$vendorPath = $vendorDir . '/' . $pkgPath;
+			if (is_dir($vendorPath)) {
+				echo "Loading $vendorPath\n";
 				return $vendorPath;
 			}
 		}
 
+
 		// original default behaviour
+		echo "Loading $cwdPath\n";
 		return $cwdPath;
 	}
 
